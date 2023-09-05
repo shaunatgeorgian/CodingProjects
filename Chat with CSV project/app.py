@@ -71,6 +71,8 @@ import os
 
 def main():
     load_dotenv()
+
+    # Load the OpenAI API key from the environment variable
     if os.getenv("OPENAI_API_KEY") is None or os.getenv("OPENAI_API_KEY") == "":
         print("OPENAI_API_KEY is not set")
         exit(1)
@@ -80,34 +82,33 @@ def main():
     st.set_page_config(page_title="Ask your CSV")
     st.header("Ask your CSV 📈")
 
-    if 'conversation' not in st.session_state:
-        st.session_state.conversation = ""
-
     user_csv = st.file_uploader("Upload your CSV file", type="csv")
 
     if user_csv is not None:
+        # Read the uploaded file into a DataFrame
         df = pd.read_csv(user_csv)
+
+        # Save the DataFrame to a temporary file
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(df.to_csv(index=False).encode('utf-8'))
 
-        llm = OpenAI(temperature=0)
-        agent = create_csv_agent(llm, tfile.name, verbose=True)
-
         user_question = st.text_input("Ask a question about your CSV file:")
 
-        if user_question:
-            with st.spinner(text="In progress..."):
-                st.session_state.conversation += f"Q: {user_question}\n"
+        llm = OpenAI(temperature=0)
+        
+        # Pass the temporary file's path to create_csv_agent()
+        agent = create_csv_agent(llm, tfile.name, verbose=True)
 
+        if user_question is not None and user_question != "":
+            with st.spinner(text="In progress..."):
+                st.write(f"Your question was: {user_question}")
                 try:
-                    response = agent.run(st.session_state.conversation)
-                    st.session_state.conversation += f"A: {response}\n"
+                    # This is where we ask the question and get the answer
+                    response = agent.run(user_question)
                 except Exception as e:
                     response = f"An error occurred: {e}"
-                    st.session_state.conversation += f"A: {response}\n"
-                
-                # Display the conversation history
-                st.write(st.session_state.conversation)
+
+                st.write(f"Answer: {response}")
 
 if __name__ == "__main__":
     main()
