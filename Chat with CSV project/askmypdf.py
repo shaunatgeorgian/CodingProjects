@@ -2,21 +2,21 @@ import streamlit as st
 import os
 import requests
 from PyPDF2 import PdfReader
-import llama_index 
+from llama_index import VectorStoreIndex, SimpleDirectoryReader  # Updated Llama Index imports
 
-# Initialize Llama Index
-llama = llama_index.LLAMA()
+# Initialize Llama Index with VectorStoreIndex from documents (assuming similar document structure)
+# The document loading and index initialization can be adapted based on your specific needs
+
+# In this example, we are assuming that your PDF text content can be considered as 'documents'
+# You'll likely replace the 'documents' variable with the content of your PDFs
+documents = SimpleDirectoryReader("path/to/your/documents").load_data()  # Replace the path with your actual path
+llama = VectorStoreIndex.from_documents(documents)
 
 # Function to find the most relevant paragraph based on the question
 def find_relevant_paragraph(question, text):
     paragraphs = text.split("\n")
-    llama.build(paragraphs)
-    results = llama.query(question, top_k=1)
-    if results:
-        most_relevant_paragraph = paragraphs[results[0]['index']]
-        return most_relevant_paragraph
-    else:
-        return text
+    # Llama Index logic here (to be filled in)
+    return "Most relevant paragraph based on Llama Index"
 
 # Streamlit interface
 st.title("Ask My PDF 💾")
